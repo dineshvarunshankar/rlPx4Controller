@@ -16,14 +16,14 @@ __version__ = "0.0.2"
 
 ext_modules = [
     # annotate this part if eigen version higher than 3.3.7
-    Pybind11Extension(
-        "rlPx4Controller.traj_tools.polyTrajGen",
-        ["bind/polyTrajGen.cpp","src/polynomial_traj.cpp"],
-        # Example: passing in the version to the compiled code
-        define_macros=[("VERSION_INFO", __version__)],
-        include_dirs=["include","/usr/include/eigen3"],
+    # Pybind11Extension(
+    #     "rlPx4Controller.traj_tools.polyTrajGen",
+    #     ["bind/polyTrajGen.cpp","src/polynomial_traj.cpp"],
+    #     # Example: passing in the version to the compiled code
+    #     define_macros=[("VERSION_INFO", __version__)],
+    #     include_dirs=["include","/usr/include/eigen3"],
 
-    ),
+    # ),
 
     
     Pybind11Extension(

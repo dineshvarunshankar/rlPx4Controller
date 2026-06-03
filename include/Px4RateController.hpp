@@ -82,9 +82,10 @@ public:
 
 Px4RateController::Px4RateController()
 {
-	set_pid_params(Eigen::Vector3d(0.5,0.5,0.2),
-				   Eigen::Vector3d(0.08,0.08,0.05),
-				   Eigen::Vector3d(0.001,0.001,0.0));
+	// roll, pitch, yaw  <-  MC_*RATE_{P,I,D}
+	set_pid_params(Eigen::Vector3d(0.072, 0.097, 0.15),   // MC_ROLLRATE_P, MC_PITCHRATE_P, MC_YAWRATE_P
+				   Eigen::Vector3d(0.171, 0.228, 0.5),    // MC_ROLLRATE_I, MC_PITCHRATE_I, MC_YAWRATE_I
+				   Eigen::Vector3d(0.0009, 0.0011, 0.0)); // MC_ROLLRATE_D, MC_PITCHRATE_D, MC_YAWRATE_D
 }
 void Px4RateController::set_pid_params(Eigen::Vector3d gain_p, Eigen::Vector3d gain_i, Eigen::Vector3d gain_d)
 {

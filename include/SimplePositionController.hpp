@@ -64,7 +64,7 @@ public:
         double acc_z = velDerivateZ_.update(_vel_world(2), dt);
         hoverThrustEkf->fuseAccZ(acc_z, thrust_z(2));
         // _hover_thrust =  hoverThrustEkf->getHoverThrust();
-        _hover_thrust = 0.1533; //0.29233965277671814;
+        _hover_thrust = 0.631; // Starling 2 (0.30 kg): per-motor hover throttle s.t. 4*kT*omega(u)^2 = m*g
 
     };
     Eigen::VectorXd update(const Eigen::Vector3d &pos_sp, const Eigen::Vector3d &vel_sp, const Eigen::Vector3d &acc_sp, const double yaw_sp);
@@ -75,8 +75,8 @@ public:
 
 SimplePositionController::SimplePositionController(/* args */)
 {
-    _Kp << 1.5, 1.5, 1.5;
-    _Kv << 1.5, 1.5, 1.5;
+    _Kp << 1.5, 1.5, 1.5; // unused in CTRL_VEL_ONLY (velocity command mode)
+    _Kv << 3.0, 3.0, 8.0; // MPC_XY_VEL_P_ACC=3.0 (x,y), MPC_Z_VEL_P_ACC=8.0 (z)
     hoverThrustEkf = new HoverThrustEkf(0.4f, 0.1f, 0.0036f);
 }
 
@@ -115,7 +115,7 @@ Eigen::VectorXd SimplePositionController::update(const Eigen::Vector3d &pos_sp, 
     }
 
 	for (int i = 0; i < 3; i++) {
-		des_acc(i) = MyMath::constrain(des_acc(i), double(-4.f),double(4.f));
+		des_acc(i) = MyMath::constrain(des_acc(i), double(-3.f),double(3.f)); // MPC_ACC_HOR / MPC_ACC_UP_MAX / MPC_ACC_DOWN_MAX = 3.0
 	}
     // des_acc += Eigen::Vector3d(0, 0, 0);
     // std::cout << "des_acc " <<des_acc<<std::endl;
