@@ -63,8 +63,11 @@ public:
         hoverThrustEkf->predict(dt); // dt
         double acc_z = velDerivateZ_.update(_vel_world(2), dt);
         hoverThrustEkf->fuseAccZ(acc_z, thrust_z(2));
-        // _hover_thrust =  hoverThrustEkf->getHoverThrust();
-        _hover_thrust = 0.631; // Starling 2 (0.30 kg): per-motor hover throttle s.t. 4*kT*omega(u)^2 = m*g
+        // PX4-faithful: use the online HoverThrustEKF estimate as the thrust feedforward.
+        // Adapts per-env (handles mass domain randomization); seeded near the 0.30 kg
+        // nominal in the constructor so it does not sag while converging.
+        _hover_thrust =  hoverThrustEkf->getHoverThrust();
+        // _hover_thrust = 0.631; // Starling 2 (0.30 kg): per-motor hover throttle s.t. 4*kT*omega(u)^2 = m*g
 
     };
     Eigen::VectorXd update(const Eigen::Vector3d &pos_sp, const Eigen::Vector3d &vel_sp, const Eigen::Vector3d &acc_sp, const double yaw_sp);
@@ -77,7 +80,9 @@ SimplePositionController::SimplePositionController(/* args */)
 {
     _Kp << 1.5, 1.5, 1.5; // unused in CTRL_VEL_ONLY (velocity command mode)
     _Kv << 3.0, 3.0, 8.0; // MPC_XY_VEL_P_ACC=3.0 (x,y), MPC_Z_VEL_P_ACC=8.0 (z)
-    hoverThrustEkf = new HoverThrustEkf(0.4f, 0.1f, 0.0036f);
+    // init hover-thrust at the Starling 2 (0.30 kg) nominal so the EKF starts correct and adapts from there
+    // hoverThrustEkf = new HoverThrustEkf(0.4f, 0.1f, 0.0036f);
+    hoverThrustEkf = new HoverThrustEkf(0.63f, 0.1f, 0.0036f);
 }
 
 SimplePositionController::~SimplePositionController()
