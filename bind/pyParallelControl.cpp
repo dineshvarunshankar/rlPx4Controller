@@ -28,7 +28,9 @@ PYBIND11_MODULE(pyParallelControl, m)
     py::class_<pyParallelVelocityControl>(m, "ParallelVelControl")
         .def(py::init<int>(), "b")
         .def("set_status", &pyParallelVelocityControl::set_status, py::arg("pos").none(), py::arg("q_matrix").none(), py::arg("vel").none(), py::arg("ang_vel").none(), py::arg("dt").none())
-        .def("update", &pyParallelVelocityControl::update, py::arg("actions").none());
+        .def("update", &pyParallelVelocityControl::update, py::arg("actions").none())
+        .def("reset", &pyParallelVelocityControl::reset, py::arg("env_ids"))
+        .def("get_hover_thrust", &pyParallelVelocityControl::get_hover_thrust);
     py::class_<pyParallelPositionControl>(m, "ParallelPosControl")
         .def(py::init<int>(), "b")
         .def("set_status", &pyParallelPositionControl::set_status, py::arg("pos").none(), py::arg("q_matrix").none(), py::arg("vel").none(), py::arg("ang_vel").none(), py::arg("dt").none())

@@ -25,7 +25,7 @@ private:
     Eigen::Vector4d _tmp_array;
     uint8_t _rotor_count;
     Eigen::Vector4d _rotor_outputs;
-    double _thrust_factor = 1;
+    double _thrust_factor = 0.9; // PX4 THR_MDL_FAC (real Starling2); maps linear thrust setpoint -> PWM command
     /* data */
 public:
     Px4Mixer(/* args */);
@@ -117,11 +117,15 @@ Eigen::Vector4d Px4Mixer::update(const Eigen::Vector4d  &torque)
     for (unsigned i = 0; i < _rotor_count; i++) {
       // Implement simple model for static relationship between applied motor pwm and motor thrust
       // model: thrust = (1 - _thrust_factor) * PWM + _thrust_factor * PWM^2
-    //   if (_thrust_factor > 0.0f) {
-    //     _rotor_outputs[i] = -(1.0f - _thrust_factor) / (2.0f * _thrust_factor) + sqrtf((1.0f - _thrust_factor) *
-    //         (1.0f - _thrust_factor) / (4.0f * _thrust_factor * _thrust_factor) + (_rotor_outputs[i] < 0.0f ? 0.0f : _rotor_outputs[i] /
-    //             _thrust_factor));
-    //     }
+      // Invert it to map the linear thrust setpoint -> PWM command. The sysID throttle->omega
+      // curve is fit in PWM space (u = (pwm_us - 1000)/1000), so this keeps the sim command
+      // space in sync with real PX4's post-THR_MDL_FAC actuator output.
+      if (_thrust_factor > 0.0f) {
+        _rotor_outputs(i) = -(1.0f - _thrust_factor) / (2.0f * _thrust_factor) +
+            sqrtf((1.0f - _thrust_factor) * (1.0f - _thrust_factor) /
+                      (4.0f * _thrust_factor * _thrust_factor) +
+                  (_rotor_outputs(i) < 0.0f ? 0.0f : _rotor_outputs(i) / _thrust_factor));
+      }
       }
 
 

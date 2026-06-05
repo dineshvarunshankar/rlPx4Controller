@@ -6,6 +6,8 @@
 #include "Px4Mixer.hpp"
 #include <pybind11/pybind11.h>
 #include <pybind11/eigen.h>
+#include <pybind11/stl.h>
+#include <vector>
 #include "droneStatus.hpp"
 
 class pyParallelVelocityControl
@@ -25,6 +27,8 @@ public:
     pyParallelVelocityControl(int envs_num);
     void set_status(Eigen::MatrixXd pos_matrix, Eigen::MatrixXd q_matrix, Eigen::MatrixXd vel_matrix, Eigen::MatrixXd ang_vel_matrix, double dt);
     Eigen::MatrixXd update(const Eigen::MatrixXd &actions);
+    void reset(const std::vector<int> &env_ids);
+    Eigen::VectorXd get_hover_thrust();
     ~pyParallelVelocityControl()
     {
 
@@ -96,5 +100,26 @@ Eigen::MatrixXd pyParallelVelocityControl::update(const Eigen::MatrixXd &actions
         _commands.block(i,0,i+1,4) << cmd(0) , cmd(1), cmd(2), cmd(3); 
     }
     return _commands;
+}
+void pyParallelVelocityControl::reset(const std::vector<int> &env_ids)
+{
+    // zero the per-env velocity integrator (called on episode reset to avoid cross-episode windup)
+    for (int idx : env_ids)
+    {
+        if (idx >= 0 && idx < _envs_num)
+        {
+            _pos_control.at(idx).reset();
+        }
+    }
+}
+Eigen::VectorXd pyParallelVelocityControl::get_hover_thrust()
+{
+    // per-env converged hover-thrust estimate (normalized collective thrust the EKF settled on)
+    Eigen::VectorXd ht(_envs_num);
+    for (int i = 0; i < _envs_num; i++)
+    {
+        ht(i) = _pos_control.at(i).get_hover_thrust();
+    }
+    return ht;
 }
 #endif
