@@ -12,11 +12,18 @@ struct Rotor
     float thrust_scale; /**< scales thrust for this rotor */
 };
 
+// Real Starling 2 (D0014) geometry. The mixer maps a torque *command* to motor
+// outputs => it is the ALLOCATION (inverse): scale ~ 1/arm, unit-normalized per
+// rotor. Roll uses the lateral arm CA_ROTOR0_PY=0.0625 (smaller -> larger scale),
+// pitch uses the longitudinal arm CA_ROTOR0_PX=0.085 (larger -> smaller scale):
+//   roll=0.805651, pitch=0.592390  (vs symmetric 0.707107/0.707107).
+// This balances effective authority (roll*PY = pitch*PX) so the rate loop keeps
+// its designed gain. Signs/ordering preserved; yaw/thrust scales unchanged.
 static constexpr Rotor _config_quad_x[]{
-        {-0.707107, -0.707107, -1.000000, 1.000000},
-        {0.707107, 0.707107, -1.000000, 1.000000},
-        {0.707107, -0.707107, 1.000000, 1.000000},
-        {-0.707107, 0.707107, 1.000000, 1.000000},
+        {-0.805651, -0.592390, -1.000000, 1.000000},
+        {0.805651, 0.592390, -1.000000, 1.000000},
+        {0.805651, -0.592390, 1.000000, 1.000000},
+        {-0.805651, 0.592390, 1.000000, 1.000000},
         
 };
 class Px4Mixer
